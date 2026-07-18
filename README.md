@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FemBalance
 
-## Getting Started
+Predicting hormonal phases from everyday wearable data — built for equitable women's health.
 
-First, run the development server:
+**Live demo:** https://fem-balance.vercel.app
 
-```bash
+## Problem
+
+Menstrual and hormonal health remains under-researched, and existing datasets are small and demographically narrow (e.g. mcPHASES covers 42 young adults in Toronto). Underserved women — with limited access to healthcare, nutrition, and wearable technology — are especially absent from this data, making it harder to build tools that serve them. FemBalance explores whether passive wearable signals (heart rate, skin temperature) can predict hormonal phase without requiring manual tracking, and packages that prediction for clinicians rather than end consumers.
+
+## What it does
+
+- **Wearable signal tracking** — ingests daily-aggregated heart rate, skin temperature, sleep, and glucose data
+- **Explainable phase prediction** — predicts menstrual cycle phase (menstruation / late-follicular / ovulation / luteal) with a confidence score and feature-importance breakdown, prioritizing interpretability over model size
+- **Clinician dashboard** — a patient-list view with flagged anomalies, and a per-patient timeline with an explainability panel
+
+## Tech stack
+
+- Next.js 16 (App Router) — frontend + API routes
+- MongoDB Atlas — data storage
+- Recharts — visualization
+- Vercel — deployment
+
+## Data source
+
+Built on [mcPHASES](https://doi.org/10.13026/zx6a-2c81) (Lin et al., 2025), a PhysioNet restricted-access dataset combining Fitbit, Dexcom CGM, and Mira hormone-tracker data from 42 participants.
+
+**Data use compliance:** mcPHASES is distributed under the PhysioNet Restricted Health Data License. Per the Data Use Agreement, raw participant-level data is **not redistributed** in this repository. Only aggregated, derived features and trained model outputs are included. Access to the original dataset requires signing PhysioNet's DUA at https://physionet.org/content/mcphases/.
+
+## Model
+
+- Input features: daily-aggregated heart rate, skin temperature, sleep score, glucose average
+- Output: predicted cycle phase + confidence score + top contributing features
+- Design priority: reproducibility and explainability over raw accuracy, per the challenge brief
+
+_(Model performance metrics to be added once trained on the full dataset — see `/model` for training code and evaluation.)_
+
+## Equity framing
+
+Patients in this demo are tagged by cohort (`underserved` / `general`) to reflect the project's goal: extending hormone-phase prediction to populations underrepresented in existing wearable-health datasets.
+
+## Local setup
+
+\`\`\`bash
+npm install
+
+# add MONGODB_URI to .env.local
+
+npx tsx scripts/seed-mock.ts # or seed-real.ts once available
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+\`\`\`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Team
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Built for Hack-Nation — Foundation Models for Women's Hormonal Health.
