@@ -2,7 +2,7 @@
 
 Predicting hormonal phases from everyday wearable data — built for equitable women's health.
 
-**Live demo:** https://fem-balance.vercel.app
+**Live demo:** [https://fem-balance.vercel.app](https://fem-balance.vercel.app)
 
 ## Problem
 
@@ -25,7 +25,7 @@ Menstrual and hormonal health remains under-researched, and existing datasets ar
 
 Built on [mcPHASES](https://doi.org/10.13026/zx6a-2c81) (Lin et al., 2025), a PhysioNet restricted-access dataset combining Fitbit, Dexcom CGM, and Mira hormone-tracker data from 42 participants.
 
-**Data use compliance:** mcPHASES is distributed under the PhysioNet Restricted Health Data License. Per the Data Use Agreement, raw participant-level data is **not redistributed** in this repository. Only aggregated, derived features and trained model outputs are included. Access to the original dataset requires signing PhysioNet's DUA at https://physionet.org/content/mcphases/.
+**Data use compliance:** mcPHASES is distributed under the PhysioNet Restricted Health Data License. Per the Data Use Agreement, raw participant-level data is **not redistributed** in this repository. Only aggregated, derived features and trained model outputs are included. Access to the original dataset requires signing PhysioNet's DUA at [https://physionet.org/content/mcphases/](https://physionet.org/content/mcphases/).
 
 ## Model
 
@@ -33,7 +33,7 @@ Built on [mcPHASES](https://doi.org/10.13026/zx6a-2c81) (Lin et al., 2025), a Ph
 - Output: predicted cycle phase + confidence score + top contributing features
 - Design priority: reproducibility and explainability over raw accuracy, per the challenge brief
 
-_(Model performance metrics to be added once trained on the full dataset — see `/model` for training code and evaluation.)_
+*(Model performance metrics to be added once trained on the full dataset — see `/model` for training code and evaluation.)*
 
 ## Equity framing
 
@@ -41,14 +41,29 @@ Patients in this demo are tagged by cohort (`underserved` / `general`) to reflec
 
 ## Local setup
 
-\`\`\`bash
+1. Install dependencies
+
+```bash
 npm install
+```
 
-# add MONGODB_URI to .env.local
+1. Add MONGODB_URI to .env.local
 
+```bash
+MONGODB_URI=your_mongodb_uri
+```
+
+1. Seed the database
+
+```bash
 npx tsx scripts/seed-mock.ts # or seed-real.ts once available
+```
+
+1. Start the development server
+
+```bash
 npm run dev
-\`\`\`
+```
 
 ## Team
 
