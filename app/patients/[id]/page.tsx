@@ -87,7 +87,7 @@ export default function PatientDetail({
           ← Back to Overview
         </Link>
 
-        <span className="inline-block text-xs font-medium text-rose-600 bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 px-3 py-1 rounded-full mb-3">
+        <span className="inline-block text-xs font-medium text-rose-600 bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 px-3 py-1 rounded-full mb-3 ml-3">
           PATIENT RECORD
         </span>
         <h1 className="font-serif text-4xl text-gray-700 dark:text-gray-100 mb-2">
