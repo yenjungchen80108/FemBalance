@@ -19,28 +19,37 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <main className="p-4 md:p-8 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">FemBalance — Patient Overview</h1>
-      <div className="space-y-2">
-        {patients.map((p) => (
-          <Link
-            key={p.participantId}
-            href={`/patients/${p.participantId}`}
-            className="flex justify-between items-center p-4 border rounded-lg hover:bg-gray-50"
-          >
-            <div>
-              <p className="font-medium">{p.participantId}</p>
-              <p className="text-sm text-gray-500">
-                {p.ageRange} · {p.cohort}
-              </p>
-            </div>
-            {p.isFlagged && (
-              <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">
-                Needs Attention
-              </span>
-            )}
-          </Link>
-        ))}
+    <main className="min-h-screen bg-[#FEFCFB] dark:bg-gray-950 p-6 md:p-10">
+      <div className="max-w-3xl mx-auto">
+        <span className="inline-block text-xs font-medium text-rose-600 bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 px-3 py-1 rounded-full mb-3">
+          CLINICIAN DASHBOARD
+        </span>
+        <h1 className="font-serif text-4xl text-gray-700 dark:text-gray-100 mb-8">
+          Patient Overview
+        </h1>
+        <div className="space-y-3">
+          {patients.map((p) => (
+            <Link
+              key={p.participantId}
+              href={`/patients/${p.participantId}`}
+              className="flex justify-between items-center p-5 border border-gray-200 dark:border-gray-800 rounded-2xl bg-white dark:bg-gray-900 hover:border-rose-300 transition"
+            >
+              <div>
+                <p className="font-medium text-gray-700 dark:text-gray-200">
+                  {p.participantId}
+                </p>
+                <p className="text-sm text-gray-400">
+                  {p.ageRange} · {p.cohort}
+                </p>
+              </div>
+              {p.isFlagged && (
+                <span className="text-xs font-medium text-rose-600 bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 px-3 py-1 rounded-full">
+                  Needs Attention
+                </span>
+              )}
+            </Link>
+          ))}
+        </div>
       </div>
     </main>
   );
