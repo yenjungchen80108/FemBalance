@@ -1,46 +1,48 @@
-"use client";
-import { useEffect, useState } from "react";
 import Link from "next/link";
 
-type Patient = {
-  participantId: string;
-  ageRange: string;
-  cohort: string;
-  isFlagged: boolean;
-};
-
-export default function Dashboard() {
-  const [patients, setPatients] = useState<Patient[]>([]);
-
-  useEffect(() => {
-    fetch("/api/patients")
-      .then((res) => res.json())
-      .then(setPatients);
-  }, []);
-
+export default function Home() {
   return (
-    <main className="p-4 md:p-8 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">FemBalance — Patient Overview</h1>
-      <div className="space-y-2">
-        {patients.map((p) => (
-          <Link
-            key={p.participantId}
-            href={`/patients/${p.participantId}`}
-            className="flex justify-between items-center p-4 border rounded-lg hover:bg-gray-50"
-          >
-            <div>
-              <p className="font-medium">{p.participantId}</p>
-              <p className="text-sm text-gray-500">
-                {p.ageRange} · {p.cohort}
-              </p>
-            </div>
-            {p.isFlagged && (
-              <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">
-                Needs Attention
-              </span>
-            )}
-          </Link>
-        ))}
+    <main className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
+      <div className="max-w-4xl mx-auto px-6 py-24 text-center">
+        <h1 className="text-5xl font-bold text-gray-900 mb-4">FemBalance</h1>
+        <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
+          Predicting hormonal phases from everyday wearable data — built for
+          equitable women&apos;s health.
+        </p>
+        <Link
+          href="/dashboard"
+          className="inline-block bg-purple-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-purple-700 transition"
+        >
+          View Patient Dashboard
+        </Link>
+      </div>
+
+      <div className="max-w-5xl mx-auto px-6 pb-24 grid md:grid-cols-3 gap-6">
+        <div className="p-6 border rounded-xl bg-white">
+          <h3 className="font-semibold text-lg mb-2">
+            Wearable Signal Tracking
+          </h3>
+          <p className="text-gray-600 text-sm">
+            Passive heart rate, skin temperature, and sleep data collected from
+            everyday wearables — no manual logging required.
+          </p>
+        </div>
+        <div className="p-6 border rounded-xl bg-white">
+          <h3 className="font-semibold text-lg mb-2">
+            Explainable Phase Prediction
+          </h3>
+          <p className="text-gray-600 text-sm">
+            A reproducible, interpretable model predicts hormonal phase with a
+            transparent confidence score — not a black box.
+          </p>
+        </div>
+        <div className="p-6 border rounded-xl bg-white">
+          <h3 className="font-semibold text-lg mb-2">Clinician Dashboard</h3>
+          <p className="text-gray-600 text-sm">
+            Designed for physicians to review patient trends and flagged
+            anomalies at a glance.
+          </p>
+        </div>
       </div>
     </main>
   );
