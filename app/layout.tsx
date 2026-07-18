@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Navbar } from "@/components/navbar";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -30,8 +31,11 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${playfair.variable} ${inter.variable}`}
     >
-      <body className="font-sans">
-        <ThemeProvider>{children}</ThemeProvider>
+      <body className="font-sans" suppressHydrationWarning>
+        <ThemeProvider>
+          <Navbar />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

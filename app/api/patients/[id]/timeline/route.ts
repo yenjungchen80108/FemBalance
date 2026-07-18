@@ -1,5 +1,5 @@
 import { connectDB } from "@/lib/db";
-import { Reading, HormoneLog } from "@/lib/models";
+import { Reading } from "@/lib/models";
 import { NextResponse } from "next/server";
 
 export async function GET(
@@ -11,8 +11,5 @@ export async function GET(
   const readings = await Reading.find({ participantId: id })
     .sort({ dayInStudy: 1 })
     .lean();
-  const hormones = await HormoneLog.find({ participantId: id })
-    .sort({ dayInStudy: 1 })
-    .lean();
-  return NextResponse.json({ readings, hormones });
+  return NextResponse.json({ readings });
 }

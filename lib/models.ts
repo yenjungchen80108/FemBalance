@@ -2,45 +2,35 @@ import mongoose, { Schema } from "mongoose";
 
 const PatientSchema = new Schema({
   participantId: { type: String, required: true, unique: true },
-  ageRange: String,
-  cohort: String,
+  age: Number,
+  cohort: String, // 'underserved' / 'general'
   createdAt: { type: Date, default: Date.now },
 });
 
+// 每日客觀儀器量測（穿戴裝置 + 驗尿機器）
 const ReadingSchema = new Schema({
   participantId: { type: String, required: true, index: true },
   dayInStudy: { type: Number, required: true },
-  heartRate: Number,
-  skinTemp: Number,
-  sleepScore: Number,
-  glucoseAvg: Number,
-  stressScore: Number,
+  heartRate: Number, // 穿戴裝置
+  skinTemp: Number, // 穿戴裝置（BBT）
+  lh: Number, // 驗尿機器
+  estrogen: Number, // 驗尿機器
 });
 
-const HormoneLogSchema = new Schema({
-  participantId: { type: String, required: true, index: true },
-  dayInStudy: { type: Number, required: true },
-  lh: Number,
-  e3g: Number,
-  pdg: Number,
-  symptoms: [String],
-  reportedPhase: String,
-});
-
+// 模型預測結果
 const PredictionSchema = new Schema({
   participantId: { type: String, required: true, index: true },
   dayInStudy: { type: Number, required: true },
-  predictedPhase: String,
+  anovulationFlag: { type: Boolean, required: true },
   confidence: Number,
-  topFeatures: [{ name: String, importance: Number }],
-  flagged: { type: Boolean, default: false },
+  cycleRegularityScore: Number, // 統計計算，非模型預測，附加顯示用
+  topFeatures: [{ name: String, level: String }], // level: 'high'|'medium'|'low'|'minimal'
+  flagged: { type: Boolean, default: false }, // 综合異常提示（例如連續多次疑似無排卵）
 });
 
 export const Patient =
   mongoose.models.Patient || mongoose.model("Patient", PatientSchema);
 export const Reading =
   mongoose.models.Reading || mongoose.model("Reading", ReadingSchema);
-export const HormoneLog =
-  mongoose.models.HormoneLog || mongoose.model("HormoneLog", HormoneLogSchema);
 export const Prediction =
   mongoose.models.Prediction || mongoose.model("Prediction", PredictionSchema);

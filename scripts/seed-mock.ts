@@ -2,12 +2,20 @@ import dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
 
 import { connectDB } from "../lib/db";
-import { Patient, Reading, HormoneLog, Prediction } from "../lib/models";
-
-const PHASES = ["menstruation", "late-follicular", "ovulation", "luteal"];
+import { Patient, Reading, Prediction } from "../lib/models";
 
 function randomBetween(min: number, max: number) {
   return +(Math.random() * (max - min) + min).toFixed(1);
+}
+
+function getInfluenceLevel(): "high" | "medium" | "low" | "minimal" {
+  const levels: ("high" | "medium" | "low" | "minimal")[] = [
+    "high",
+    "medium",
+    "low",
+    "minimal",
+  ];
+  return levels[Math.floor(Math.random() * levels.length)];
 }
 
 async function seedMock() {
@@ -16,14 +24,13 @@ async function seedMock() {
   await Promise.all([
     Patient.deleteMany({}),
     Reading.deleteMany({}),
-    HormoneLog.deleteMany({}),
     Prediction.deleteMany({}),
   ]);
 
   const mockPatients = ["P001", "P002", "P003", "P004", "P005"].map(
     (id, i) => ({
       participantId: id,
-      ageRange: ["18-24", "25-34", "25-34", "35-44", "18-24"][i],
+      age: [22, 28, 31, 37, 24][i],
       cohort: i % 2 === 0 ? "underserved" : "general",
     }),
   );
@@ -32,50 +39,54 @@ async function seedMock() {
 
   for (const patient of mockPatients) {
     const readings = [];
-    const hormoneLogs = [];
     const predictions = [];
 
     for (let day = 1; day <= 30; day++) {
+      const cyclePos = day % 28;
+      const isOvulationWindow = cyclePos >= 12 && cyclePos <= 16;
+
       readings.push({
         participantId: patient.participantId,
         dayInStudy: day,
         heartRate: randomBetween(60, 90),
-        skinTemp: randomBetween(36.0, 37.3),
-        sleepScore: randomBetween(50, 95),
-        glucoseAvg: randomBetween(80, 110),
-        stressScore: randomBetween(10, 60),
+        skinTemp: isOvulationWindow
+          ? randomBetween(36.6, 37.3)
+          : randomBetween(36.0, 36.5),
+        lh: isOvulationWindow ? randomBetween(15, 40) : randomBetween(1, 10),
+        estrogen: randomBetween(20, 150),
       });
 
-      const phase = PHASES[Math.floor((day % 28) / 7)];
-      hormoneLogs.push({
-        participantId: patient.participantId,
-        dayInStudy: day,
-        lh: randomBetween(1, 20),
-        e3g: randomBetween(10, 150),
-        pdg: randomBetween(1, 10),
-        symptoms: day % 7 === 0 ? ["cramps", "fatigue"] : [],
-        reportedPhase: phase,
-      });
+      // P002 故意設計成有反覆疑似無排卵的模式，用來 demo 異常標記
+      const isAnomalyPatient = patient.participantId === "P002";
+      const anovulationFlag = isAnomalyPatient
+        ? Math.random() > 0.5
+        : Math.random() > 0.85;
 
       predictions.push({
         participantId: patient.participantId,
         dayInStudy: day,
-        predictedPhase: phase,
-        confidence: randomBetween(0.7, 0.98),
+        anovulationFlag,
+        confidence: randomBetween(0.65, 0.95),
+        cycleRegularityScore: isAnomalyPatient
+          ? randomBetween(4.5, 8.0)
+          : randomBetween(0.5, 2.5),
         topFeatures: [
-          { name: "Skin Temperature", importance: randomBetween(0.2, 0.5) },
-          { name: "Heart Rate", importance: randomBetween(0.1, 0.3) },
+          { name: "Heart Rate", level: getInfluenceLevel() },
+          { name: "Skin Temp (BBT)", level: getInfluenceLevel() },
+          { name: "LH", level: getInfluenceLevel() },
+          { name: "Estrogen", level: getInfluenceLevel() },
         ],
-        flagged: day === 15 && patient.participantId === "P002",
+        flagged: isAnomalyPatient && day === 15,
       });
     }
 
     await Reading.insertMany(readings);
-    await HormoneLog.insertMany(hormoneLogs);
     await Prediction.insertMany(predictions);
   }
 
-  console.log("✅ Mock data seeded: 5 patients × 30 days");
+  console.log(
+    "✅ Mock data seeded: 5 patients × 30 days (anovulation flag + cycle regularity)",
+  );
   process.exit(0);
 }
 
