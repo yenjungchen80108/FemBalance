@@ -4,10 +4,11 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   await connectDB();
-  const predictions = await Prediction.find({ participantId: params.id })
+  const predictions = await Prediction.find({ participantId: id })
     .sort({ dayInStudy: 1 })
     .lean();
   return NextResponse.json(predictions);

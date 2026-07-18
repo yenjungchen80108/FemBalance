@@ -13,7 +13,6 @@ function randomBetween(min: number, max: number) {
 async function seedMock() {
   await connectDB();
 
-  // 清掉舊的假資料，避免重複跑造成髒資料
   await Promise.all([
     Patient.deleteMany({}),
     Reading.deleteMany({}),
@@ -64,10 +63,10 @@ async function seedMock() {
         predictedPhase: phase,
         confidence: randomBetween(0.7, 0.98),
         topFeatures: [
-          { name: "skinTemp", importance: randomBetween(0.2, 0.5) },
-          { name: "heartRate", importance: randomBetween(0.1, 0.3) },
+          { name: "Skin Temperature", importance: randomBetween(0.2, 0.5) },
+          { name: "Heart Rate", importance: randomBetween(0.1, 0.3) },
         ],
-        flagged: day === 15 && patient.participantId === "P002", // 故意標一筆異常給 demo 用
+        flagged: day === 15 && patient.participantId === "P002",
       });
     }
 
@@ -76,7 +75,7 @@ async function seedMock() {
     await Prediction.insertMany(predictions);
   }
 
-  console.log("✅ Mock 資料建立完成：5 位病人 × 30 天");
+  console.log("✅ Mock data seeded: 5 patients × 30 days");
   process.exit(0);
 }
 

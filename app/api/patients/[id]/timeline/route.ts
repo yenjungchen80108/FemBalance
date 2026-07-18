@@ -4,13 +4,14 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   await connectDB();
-  const readings = await Reading.find({ participantId: params.id })
+  const readings = await Reading.find({ participantId: id })
     .sort({ dayInStudy: 1 })
     .lean();
-  const hormones = await HormoneLog.find({ participantId: params.id })
+  const hormones = await HormoneLog.find({ participantId: id })
     .sort({ dayInStudy: 1 })
     .lean();
   return NextResponse.json({ readings, hormones });
