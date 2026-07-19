@@ -40,10 +40,8 @@ function ChartCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="p-6 border border-gray-200 dark:border-gray-800 rounded-2xl bg-white dark:bg-gray-900">
-      <h3 className="font-serif text-lg text-gray-700 dark:text-gray-100 mb-1">
-        {title}
-      </h3>
+    <div className="p-6 border border-gray-200 rounded-2xl bg-white">
+      <h3 className="font-serif text-lg text-gray-700 mb-1">{title}</h3>
       {sub && <p className="text-xs text-gray-400 mb-4">{sub}</p>}
       {children}
     </div>
@@ -51,9 +49,7 @@ function ChartCard({
 }
 
 function ChartSkeleton() {
-  return (
-    <div className="h-64 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
-  );
+  return <div className="h-64 bg-gray-100 rounded-xl animate-pulse" />;
 }
 
 export default function Analytics() {
@@ -70,12 +66,12 @@ export default function Analytics() {
     : [];
 
   return (
-    <main className="min-h-screen bg-[#FEFCFB] dark:bg-gray-950 p-6 md:p-10">
+    <main className="min-h-screen bg-[#FEFCFB] p-6 md:p-10">
       <div className="max-w-5xl mx-auto">
-        <span className="inline-block text-xs font-medium text-rose-600 bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 px-3 py-1 rounded-full mb-3">
+        <span className="inline-block text-xs font-medium text-rose-600 bg-rose-100 px-3 py-1 rounded-full mb-3">
           POPULATION ANALYTICS
         </span>
-        <h1 className="font-serif text-4xl text-gray-700 dark:text-gray-100 mb-1">
+        <h1 className="font-serif text-4xl text-gray-700 mb-1">
           All Patients Overview
         </h1>
         <p className="text-sm text-gray-400 mb-8">

@@ -27,13 +27,21 @@ Built on [mcPHASES](https://doi.org/10.13026/zx6a-2c81) (Lin et al., 2025), a Ph
 
 **Data use compliance:** mcPHASES is distributed under the PhysioNet Restricted Health Data License. Per the Data Use Agreement, raw participant-level data is **not redistributed** in this repository. Only aggregated, derived features and trained model outputs are included. Access to the original dataset requires signing PhysioNet's DUA at [https://physionet.org/content/mcphases/](https://physionet.org/content/mcphases/).
 
+## Data Availability
+
+Raw participant-level data (mcPHASES) is not redistributed in this repository,
+in compliance with the PhysioNet Restricted Health Data Use Agreement.
+Only derived, aggregated features and model outputs are included under `/data`.
+To reproduce the full pipeline, request access to mcPHASES at
+https://physionet.org/content/mcphases/ and run `scripts/clean_and_join.py`.
+
 ## Model
 
 - Input features: daily-aggregated heart rate, skin temperature, sleep score, glucose average
 - Output: predicted cycle phase + confidence score + top contributing features
 - Design priority: reproducibility and explainability over raw accuracy, per the challenge brief
 
-*(Model performance metrics to be added once trained on the full dataset — see `/model` for training code and evaluation.)*
+_(Model performance metrics to be added once trained on the full dataset — see `/model` for training code and evaluation.)_
 
 ## Equity framing
 

@@ -46,12 +46,12 @@ function AnomalyDots({ risk }: { risk: "High" | "Medium" | "Low" }) {
 
 function PatientCardSkeleton() {
   return (
-    <div className="flex justify-between items-center p-5 border border-gray-200 dark:border-gray-800 rounded-2xl bg-white dark:bg-gray-900 animate-pulse">
+    <div className="flex justify-between items-center p-5 border border-gray-200 rounded-2xl bg-white animate-pulse">
       <div className="space-y-2">
-        <div className="h-4 w-16 bg-gray-200 dark:bg-gray-800 rounded" />
-        <div className="h-3 w-28 bg-gray-100 dark:bg-gray-800 rounded" />
+        <div className="h-4 w-16 bg-gray-200 rounded" />
+        <div className="h-3 w-28 bg-gray-100 rounded" />
       </div>
-      <div className="h-6 w-16 bg-gray-100 dark:bg-gray-800 rounded-full" />
+      <div className="h-6 w-16 bg-gray-100 rounded-full" />
     </div>
   );
 }
@@ -81,14 +81,12 @@ export default function Dashboard() {
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
-    <main className="min-h-screen bg-[#FEFCFB] dark:bg-gray-950 p-6 md:p-10">
+    <main className="min-h-screen bg-[#FEFCFB] p-6 md:p-10">
       <div className="max-w-3xl mx-auto">
-        <span className="inline-block text-xs font-medium text-rose-600 bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 px-3 py-1 rounded-full mb-3">
+        <span className="inline-block text-xs font-medium text-rose-600 bg-rose-100 px-3 py-1 rounded-full mb-3">
           CLINICIAN DASHBOARD
         </span>
-        <h1 className="font-serif text-4xl text-gray-700 dark:text-gray-100 mb-1">
-          Patient List
-        </h1>
+        <h1 className="font-serif text-4xl text-gray-700 mb-1">Patient List</h1>
         <p className="text-sm text-gray-400 mb-6">
           {filtered.length} patients · Flagged hormonal anomalies, risk
           indicators
@@ -105,8 +103,8 @@ export default function Dashboard() {
               }}
               className={`text-xs px-3 py-1.5 rounded-full border transition ${
                 filter === f
-                  ? "bg-rose-100 border-rose-300 text-rose-700 dark:bg-rose-900/30 dark:text-rose-200"
-                  : "border-gray-200 text-gray-500 hover:border-rose-200 dark:border-gray-800 dark:text-gray-400"
+                  ? "bg-rose-100 border-rose-300 text-rose-700"
+                  : "border-gray-200 text-gray-500 hover:border-rose-200"
               }`}
             >
               {f}
@@ -124,10 +122,10 @@ export default function Dashboard() {
                   key={p.participantId}
                   href={`/patients/${p.participantId}`}
                   style={{ animationDelay: `${i * 40}ms` }}
-                  className="flex justify-between items-center p-5 border border-gray-200 dark:border-gray-800 rounded-2xl bg-white dark:bg-gray-900 hover:border-rose-300 hover:shadow-sm transition animate-[fadeIn_0.4s_ease-out_backwards]"
+                  className="flex justify-between items-center p-5 border border-gray-200 rounded-2xl bg-white hover:border-rose-300 hover:shadow-sm transition animate-[fadeIn_0.4s_ease-out_backwards]"
                 >
                   <div>
-                    <p className="font-medium text-gray-700 dark:text-gray-200">
+                    <p className="font-medium text-gray-700">
                       {p.participantId}
                     </p>
                     <p className="text-sm text-gray-400">
@@ -152,7 +150,7 @@ export default function Dashboard() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="text-sm px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-800 text-gray-500 disabled:opacity-30 hover:border-rose-300 transition"
+              className="text-sm px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 disabled:opacity-30 hover:border-rose-300 transition"
             >
               ← Prev
             </button>
@@ -163,7 +161,7 @@ export default function Dashboard() {
                 className={`w-8 h-8 rounded-full text-sm transition ${
                   page === i + 1
                     ? "bg-rose-400 text-white"
-                    : "text-gray-500 hover:bg-rose-50 dark:hover:bg-rose-900/20"
+                    : "text-gray-500 hover:bg-rose-50"
                 }`}
               >
                 {i + 1}
@@ -172,7 +170,7 @@ export default function Dashboard() {
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="text-sm px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-800 text-gray-500 disabled:opacity-30 hover:border-rose-300 transition"
+              className="text-sm px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 disabled:opacity-30 hover:border-rose-300 transition"
             >
               Next →
             </button>

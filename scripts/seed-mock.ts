@@ -35,12 +35,13 @@ async function seedMock() {
       participantId: `P${num}`,
       age: Math.floor(randomBetween(18, 45)),
       cohort: Math.random() > 0.5 ? "underserved" : "general",
+      // 每人實際追蹤天數不同，模擬真實資料集不完整、參與時長不一的狀況
+      totalDays: Math.floor(randomBetween(40, 95)),
     };
   });
 
-  await Patient.insertMany(mockPatients);
+  await Patient.insertMany(mockPatients.map(({ totalDays, ...p }) => p));
 
-  // 隨機挑 20% 病人設計成「高風險型」，反覆出現疑似無排卵，方便 demo 篩選/排序功能
   const highRiskIds = new Set(
     mockPatients.filter(() => Math.random() < 0.2).map((p) => p.participantId),
   );
@@ -49,8 +50,12 @@ async function seedMock() {
     const readings = [];
     const predictions = [];
     const isHighRisk = highRiskIds.has(patient.participantId);
+    // 讓 regularity score 隨時間緩慢漂移，而不是每天純隨機，這樣拖曳滑桿時才看得出「趨勢」
+    let regularityDrift = isHighRisk
+      ? randomBetween(3, 5)
+      : randomBetween(1, 2);
 
-    for (let day = 1; day <= 30; day++) {
+    for (let day = 1; day <= patient.totalDays; day++) {
       const cyclePos = day % 28;
       const isOvulationWindow = cyclePos >= 12 && cyclePos <= 16;
 
@@ -69,6 +74,9 @@ async function seedMock() {
         estrogen: randomBetween(20, 150),
       });
 
+      regularityDrift += randomBetween(-0.3, 0.3);
+      regularityDrift = Math.max(0.3, Math.min(8, regularityDrift));
+
       const anovulationFlag = isHighRisk
         ? Math.random() > 0.4
         : Math.random() > 0.85;
@@ -78,9 +86,7 @@ async function seedMock() {
         dayInStudy: day,
         anovulationFlag,
         confidence: randomBetween(0.65, 0.95),
-        cycleRegularityScore: isHighRisk
-          ? randomBetween(4.5, 8.0)
-          : randomBetween(0.5, 2.5),
+        cycleRegularityScore: +regularityDrift.toFixed(1),
         topFeatures: [
           { name: "Heart Rate", level: getInfluenceLevel() },
           { name: "Skin Temp (BBT)", level: getInfluenceLevel() },
@@ -95,7 +101,9 @@ async function seedMock() {
     await Prediction.insertMany(predictions);
   }
 
-  console.log(`✅ Mock data seeded: ${PATIENT_COUNT} patients × 30 days`);
+  console.log(
+    `✅ Mock data seeded: ${PATIENT_COUNT} patients, variable-length records (40–95 days)`,
+  );
   process.exit(0);
 }
 

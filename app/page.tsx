@@ -1,6 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+// import { WearableIllustration } from "@/components/wearable-illustration";
+import Image from "next/image";
 
 type Stats = {
   totalPatients: number;
@@ -22,9 +24,9 @@ function StatCard({
   sub?: string;
 }) {
   return (
-    <div className="p-5 border border-gray-200 dark:border-gray-800 rounded-2xl bg-white dark:bg-gray-900 text-center">
+    <div className="p-5 border border-gray-200 rounded-2xl bg-white text-center">
       <p className="font-serif text-3xl text-rose-500 mb-1">{value}</p>
-      <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
+      <p className="text-xs text-gray-500">{label}</p>
       {sub && <p className="text-[10px] text-gray-400 mt-1">{sub}</p>}
     </div>
   );
@@ -40,37 +42,51 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-[#FEFCFB] dark:bg-gray-950">
+    <main className="min-h-screen bg-[#FEFCFB]">
       {/* Hero */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-rose-100/60 via-purple-50/40 to-transparent blur-2xl" />
-        <div className="relative max-w-3xl mx-auto px-6 pt-16 pb-12 text-center">
-          <span className="inline-block text-xs font-medium text-rose-600 bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 px-3 py-1 rounded-full mb-5">
-            HACK-NATION · WOMEN&apos;S HORMONAL HEALTH
-          </span>
-          <h1 className="font-serif text-6xl text-gray-700 dark:text-gray-100 mb-4">
-            FemBalance
-          </h1>
-          <p className="text-lg text-gray-500 dark:text-gray-400 mb-8 max-w-xl mx-auto">
-            Predicting hormonal phase from passive wearable signals — for every
-            woman, not just the studied few.
-          </p>
-          <Link
-            href="/dashboard"
-            className="inline-block bg-rose-400 text-white px-8 py-3 rounded-full font-medium hover:bg-rose-600 transition"
-          >
-            View Patient Dashboard
-          </Link>
+        <div className="relative max-w-5xl mx-auto px-6 pt-16 pb-12 grid md:grid-cols-2 gap-10 items-center">
+          <div className="text-center md:text-left">
+            <span className="inline-block text-xs font-medium text-rose-600 bg-rose-100 px-3 py-1 rounded-full mb-5">
+              HACK-NATION · WOMEN&apos;S HORMONAL HEALTH
+            </span>
+            <h1 className="font-serif text-6xl text-gray-700 mb-4">
+              FemBalance
+            </h1>
+            <p className="text-lg text-gray-500 mb-8 max-w-md mx-auto md:mx-0">
+              Predicting hormonal phase from passive wearable signals — for
+              every woman, not just the studied few.
+            </p>
+            <Link
+              href="/dashboard"
+              className="inline-block bg-rose-400 text-white px-8 py-3 rounded-full font-medium hover:bg-rose-600 transition"
+            >
+              View Patient Dashboard
+            </Link>
+          </div>
+
+          {/* <WearableIllustration /> */}
+          <div className="flex justify-center">
+            <Image
+              src="/wearable-mockup.png"
+              alt="Wearable device showing heart rate and body temperature tracking"
+              width={400}
+              height={500}
+              className="w-full max-w-xs"
+              priority
+            />
+          </div>
         </div>
       </div>
 
       {/* Aggregate stats */}
       <div className="max-w-5xl mx-auto px-6 pb-20">
         <div className="text-center mb-6">
-          <span className="inline-block text-xs font-medium text-rose-600 bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 px-3 py-1 rounded-full mb-3">
+          <span className="inline-block text-xs font-medium text-rose-600 bg-rose-100 px-3 py-1 rounded-full mb-3">
             LIVE FROM WEARABLE DATA
           </span>
-          <h2 className="font-serif text-2xl text-gray-700 dark:text-gray-100">
+          <h2 className="font-serif text-2xl text-gray-700">
             Population Overview
           </h2>
         </div>
@@ -100,7 +116,7 @@ export default function Home() {
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="h-24 bg-gray-100 dark:bg-gray-800 rounded-2xl animate-pulse"
+                className="h-24 bg-gray-100 rounded-2xl animate-pulse"
               />
             ))}
           </div>
@@ -125,12 +141,12 @@ export default function Home() {
         ].map((f) => (
           <div
             key={f.title}
-            className="p-6 border border-gray-200 dark:border-gray-800 rounded-2xl bg-white dark:bg-gray-900"
+            className="p-6 border border-gray-200 rounded-2xl bg-white"
           >
-            <span className="inline-block text-xs font-medium text-rose-600 bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 px-3 py-1 rounded-full mb-3">
+            <span className="inline-block text-xs font-medium text-rose-600 bg-rose-100 px-3 py-1 rounded-full mb-3">
               {f.title}
             </span>
-            <p className="text-gray-500 dark:text-gray-400 text-sm">{f.desc}</p>
+            <p className="text-gray-500 text-sm">{f.desc}</p>
           </div>
         ))}
       </div>
@@ -138,10 +154,10 @@ export default function Home() {
       {/* How it works + phone mockup */}
       <div className="max-w-5xl mx-auto px-6 pb-28 grid md:grid-cols-2 gap-12 items-center">
         <div>
-          <span className="inline-block text-xs font-medium text-rose-600 bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 px-3 py-1 rounded-full mb-4">
+          <span className="inline-block text-xs font-medium text-rose-600 bg-rose-100 px-3 py-1 rounded-full mb-4">
             HOW IT WORKS
           </span>
-          <h2 className="font-serif text-3xl text-gray-700 dark:text-gray-100 mb-6">
+          <h2 className="font-serif text-3xl text-gray-700 mb-6">
             From wearable data to clinical insight
           </h2>
 
@@ -168,9 +184,7 @@ export default function Home() {
                   {s.step}
                 </span>
                 <div>
-                  <p className="font-medium text-gray-700 dark:text-gray-200 mb-1">
-                    {s.title}
-                  </p>
+                  <p className="font-medium text-gray-700 mb-1">{s.title}</p>
                   <p className="text-sm text-gray-400">{s.desc}</p>
                 </div>
               </div>

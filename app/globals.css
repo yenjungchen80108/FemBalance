@@ -15,9 +15,9 @@ body {
     color 0.2s ease;
 }
 
-.dark body {
+/* .dark body {
   background-color: #030712;
-}
+} */
 
 @keyframes fadeIn {
   from {
