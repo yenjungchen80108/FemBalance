@@ -138,7 +138,7 @@ export default function Analytics() {
                     width={100}
                   />
                   <Tooltip
-                    formatter={(value: number, _name, props: any) => [
+                    formatter={(_value: any, _name: any, props: any) => [
                       props.payload.coefficient.toFixed(3),
                       "Coefficient",
                     ]}
