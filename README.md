@@ -26,11 +26,6 @@ Menstrual and hormonal health remains under-researched, and existing tracking to
 
 FemBalance merges two datasets, cleaned and unified into a single schema (see [`docs/data-dictionary.md`](docs/data-dictionary.md) for the full column-level reference):
 
-- **mcPHASES** ([PhysioNet](https://doi.org/10.13026/zx6a-2c81), Lin et al., 2025) — real wearable sensor recordings (heart rate, skin temperature) from participants, restricted-access. This data has no outcome labels and is used for display purposes only — it is **not used to train the model**.
-- **[Dataset for Menstrual Cycle Phase Prediction and Hygiene Guidance](https://dx.doi.org/10.21227/jf7f-s431)** (Komuntale, Nakirya & Karereigana, 2025, IEEE DataPort) — 42 participants, with cycle-tracking, hormonal (LH, estrogen, BBT), symptom, and hygiene data, including pre-computed cycle-outcome labels. This is the **only data used for supervised model training**.
-
-**Data use compliance:** mcPHASES is distributed under the PhysioNet Restricted Health Data License; per its Data Use Agreement, raw participant-level data is **not redistributed** in this repository — only aggregated, derived features and model outputs are included. Access to the original dataset requires signing PhysioNet's DUA at [physionet.org/content/mcphases](https://physionet.org/content/mcphases/). The IEEE DataPort dataset is cited above per its terms of use.
-
 ## Model
 
 - **Input features:** age, skin temperature (BBT), LH, estrogen — all objective instrument readings, no self-reported data
@@ -64,7 +59,7 @@ schema this script expects.
 
 ## Known limitations
 
-- **Training labels are 100% synthetic.** The only rows with a usable target label come from the IEEE DataPort dataset, which is a synthetically augmented compilation, not raw clinical observation. Real-world wearable data (mcPHASES) has no ground truth and is not used in training.
+- **Training labels are 100% synthetic.** The only rows with a usable target label come from the IEEE DataPort dataset, which is a synthetically augmented compilation, not raw clinical observation.
 - **Small sample size.** Only 42 participants contribute to model training (2,937 daily records). Cross-validation is grouped by participant to avoid data leakage, but results should be interpreted as directional, not conclusive.
 - **Cross-sectional, not temporal.** Predictions are based on same-day readings rather than a rolling window. Incorporating multi-day trend features (e.g. temperature trajectory) is a natural next step, given the continuous physiological nature of ovulatory cycles.
 - **Temperature scale mismatch across sources.** Skin temperature means different things in each dataset (relative deviation vs. absolute BBT) and is not visually compared across sources on the same axis.
