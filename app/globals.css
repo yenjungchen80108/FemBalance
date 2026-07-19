@@ -4,9 +4,9 @@ html {
   color-scheme: light;
 }
 
-html.dark {
+/* html.dark {
   color-scheme: dark;
-}
+} */
 
 body {
   background-color: white;
