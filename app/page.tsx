@@ -1,6 +1,44 @@
+"use client";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+
+type Stats = {
+  totalPatients: number;
+  underservedCount: number;
+  underservedPct: number;
+  totalReadings: number;
+  anovulationRate: number;
+  avgConfidence: number;
+  avgRegularity: string;
+};
+
+function StatCard({
+  label,
+  value,
+  sub,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+}) {
+  return (
+    <div className="p-5 border border-gray-200 dark:border-gray-800 rounded-2xl bg-white dark:bg-gray-900 text-center">
+      <p className="font-serif text-3xl text-rose-500 mb-1">{value}</p>
+      <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
+      {sub && <p className="text-[10px] text-gray-400 mt-1">{sub}</p>}
+    </div>
+  );
+}
 
 export default function Home() {
+  const [stats, setStats] = useState<Stats | null>(null);
+
+  useEffect(() => {
+    fetch("/api/stats")
+      .then((res) => res.json())
+      .then(setStats);
+  }, []);
+
   return (
     <main className="min-h-screen bg-[#FEFCFB] dark:bg-gray-950">
       {/* Hero */}
@@ -24,6 +62,49 @@ export default function Home() {
             View Patient Dashboard
           </Link>
         </div>
+      </div>
+
+      {/* Aggregate stats */}
+      <div className="max-w-5xl mx-auto px-6 pb-20">
+        <div className="text-center mb-6">
+          <span className="inline-block text-xs font-medium text-rose-600 bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 px-3 py-1 rounded-full mb-3">
+            LIVE FROM WEARABLE DATA
+          </span>
+          <h2 className="font-serif text-2xl text-gray-700 dark:text-gray-100">
+            Population Overview
+          </h2>
+        </div>
+        {stats ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <StatCard
+              label="Patients Tracked"
+              value={String(stats.totalPatients)}
+            />
+            <StatCard
+              label="Underserved Cohort"
+              value={`${stats.underservedPct}%`}
+              sub={`${stats.underservedCount} patients`}
+            />
+            <StatCard
+              label="Wearable Readings Collected"
+              value={String(stats.totalReadings)}
+            />
+            <StatCard
+              label="Suspected Anovulation Rate"
+              value={`${stats.anovulationRate}%`}
+              sub="across tracked cycles"
+            />
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-24 bg-gray-100 dark:bg-gray-800 rounded-2xl animate-pulse"
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Feature cards */}
@@ -96,7 +177,6 @@ export default function Home() {
             ))}
           </div>
         </div>
-
         {/* Phone mockup */}
         <div className="flex justify-center">
           <div className="relative w-[280px] h-[580px] bg-gray-900 rounded-[2.5rem] p-3 shadow-2xl">
@@ -207,7 +287,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </div>
+        </div>{" "}
       </div>
     </main>
   );
