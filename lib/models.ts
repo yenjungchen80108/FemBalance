@@ -7,26 +7,29 @@ const PatientSchema = new Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-// 每日客觀儀器量測（穿戴裝置 + 驗尿機器）
+// Daily objective instrument readings (wearable device + urine hormone test)
 const ReadingSchema = new Schema({
   participantId: { type: String, required: true, index: true },
   dayInStudy: { type: Number, required: true },
-  heartRate: Number, // 穿戴裝置
-  skinTemp: Number, // 穿戴裝置（BBT）
-  lh: Number, // 驗尿機器
-  estrogen: Number, // 驗尿機器
+  heartRate: Number, // wearable device
+  skinTemp: Number, // wearable device (BBT)
+  lh: Number, // urine hormone test
+  estrogen: Number, // urine hormone test
 });
 
-// 模型預測結果
+// Model prediction output
 const PredictionSchema = new Schema({
   participantId: { type: String, required: true, index: true },
   dayInStudy: { type: Number, required: true },
   anovulationFlag: { type: Boolean, required: true },
   confidence: Number,
-  cycleRegularityScore: Number, // 統計計算，非模型預測，附加顯示用
+  cycleRegularityScore: Number, // statistically computed, not model-predicted; shown for reference
   topFeatures: [{ name: String, level: String }], // level: 'high'|'medium'|'low'|'minimal'
-  flagged: { type: Boolean, default: false }, // 综合異常提示（例如連續多次疑似無排卵）
+  flagged: { type: Boolean, default: false }, // composite anomaly flag (e.g. repeated suspected anovulation)
 });
+
+PredictionSchema.index({ participantId: 1, dayInStudy: 1 });
+PredictionSchema.index({ flagged: 1 });
 
 export const Patient =
   mongoose.models.Patient || mongoose.model("Patient", PatientSchema);

@@ -1,282 +1,240 @@
 "use client";
+import { useEffect, useState, use } from "react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  ResponsiveContainer,
+} from "recharts";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
-type Stats = {
-  totalPatients: number;
-  underservedCount: number;
-  underservedPct: number;
-  totalReadings: number;
-  anovulationRate: number;
-  avgConfidence: number;
-  avgRegularity: string;
+const influenceStyles: Record<string, { dot: string; label: string }> = {
+  high: { dot: "bg-rose-700", label: "High Influence" },
+  medium: { dot: "bg-rose-300", label: "Medium Influence" },
+  low: { dot: "bg-amber-300", label: "Low Influence" },
+  minimal: {
+    dot: "border border-sky-300 bg-white",
+    label: "Minimal Influence",
+  },
 };
 
-function StatCard({
-  label,
-  value,
-  sub,
+export default function PatientDetail({
+  params,
 }: {
-  label: string;
-  value: string;
-  sub?: string;
+  params: Promise<{ id: string }>;
 }) {
-  return (
-    <div className="p-5 border border-gray-200 dark:border-gray-800 rounded-2xl bg-white dark:bg-gray-900 text-center">
-      <p className="font-serif text-3xl text-rose-500 mb-1">{value}</p>
-      <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
-      {sub && <p className="text-[10px] text-gray-400 mt-1">{sub}</p>}
-    </div>
-  );
-}
-
-const HOW_IT_WORKS = [
-  {
-    step: "01",
-    title: "Patient List",
-    desc: "Flagged hormonal anomalies and risk indicators, sorted for clinical review.",
-  },
-  {
-    step: "02",
-    title: "Ovulation Pattern Timeline",
-    desc: "Per-patient cycle tracking from objective heart rate, temperature, and hormone readings.",
-  },
-  {
-    step: "03",
-    title: "Explainability Panel",
-    desc: "Which signals — heart rate, temperature, LH, estrogen — drove each prediction.",
-  },
-];
-
-const MOCK_PATIENTS = [
-  { id: "P001", sub: "22 yrs · underserved", risk: "High", dots: 3 },
-  { id: "P002", sub: "28 yrs · general", risk: "Medium", dots: 2 },
-  { id: "P003", sub: "31 yrs · underserved", risk: "Low", dots: 0 },
-];
-
-const riskDotColor = [
-  "bg-rose-700",
-  "bg-rose-300",
-  "bg-amber-300",
-  "border border-sky-300",
-];
-
-export default function Home() {
-  const [stats, setStats] = useState<Stats | null>(null);
+  const { id } = use(params);
+  const [timeline, setTimeline] = useState<any>(null);
+  const [predictions, setPredictions] = useState<any[]>([]);
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch("/api/stats")
+    fetch(`/api/patients/${id}/timeline`)
       .then((res) => res.json())
-      .then(setStats)
-      .catch(() => setStats(null));
-  }, []);
+      .then(setTimeline);
+    fetch(`/api/patients/${id}/prediction`)
+      .then((res) => res.json())
+      .then((data) => {
+        setPredictions(data);
+        if (data.length > 0) setSelectedDay(data[0].dayInStudy);
+      });
+  }, [id]);
 
-  return (
-    <main className="min-h-screen bg-[#FEFCFB] dark:bg-gray-950">
-      {/* Hero */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-rose-100/60 via-purple-50/40 to-transparent blur-2xl" />
-        <div className="relative max-w-3xl mx-auto px-6 pt-16 pb-12 text-center">
-          <span className="inline-block text-xs font-medium text-rose-600 bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 px-3 py-1 rounded-full mb-5">
-            HACK-NATION · WOMEN&apos;S HORMONAL HEALTH
-          </span>
-          <h1 className="font-serif text-6xl text-gray-700 dark:text-gray-100 mb-4">
-            FemBalance
-          </h1>
-          <p className="text-lg text-gray-500 dark:text-gray-400 mb-8 max-w-xl mx-auto">
-            Predicting hormonal phase from passive wearable signals — for every
-            woman, not just the studied few.
-          </p>
-          <Link
-            href="/dashboard"
-            className="inline-block bg-rose-400 text-white px-8 py-3 rounded-full font-medium hover:bg-rose-600 transition"
-          >
-            View Patient Dashboard
-          </Link>
-        </div>
-      </div>
-
-      {/* Aggregate stats */}
-      <div className="max-w-5xl mx-auto px-6 pb-20">
-        <div className="text-center mb-6">
-          <span className="inline-block text-xs font-medium text-rose-600 bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 px-3 py-1 rounded-full mb-3">
-            LIVE FROM WEARABLE DATA
-          </span>
-          <h2 className="font-serif text-2xl text-gray-700 dark:text-gray-100">
-            Population Overview
-          </h2>
-        </div>
-
-        {stats ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard
-              label="Patients Tracked"
-              value={String(stats.totalPatients)}
-            />
-            <StatCard
-              label="Underserved Cohort"
-              value={`${stats.underservedPct}%`}
-              sub={`${stats.underservedCount} patients`}
-            />
-            <StatCard
-              label="Wearable Readings Collected"
-              value={String(stats.totalReadings)}
-            />
-            <StatCard
-              label="Suspected Anovulation Rate"
-              value={`${stats.anovulationRate}%`}
-              sub="across tracked cycles"
-            />
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
+  if (!timeline)
+    return (
+      <main className="min-h-screen bg-[#FEFCFB] dark:bg-gray-950 p-4 md:p-10">
+        <div className="max-w-4xl mx-auto animate-pulse">
+          <div className="h-4 w-24 bg-gray-100 dark:bg-gray-800 rounded mb-4" />
+          <div className="h-6 w-20 bg-gray-100 dark:bg-gray-800 rounded-full mb-3" />
+          <div className="h-10 w-48 bg-gray-200 dark:bg-gray-800 rounded mb-8" />
+          <div className="h-72 bg-gray-100 dark:bg-gray-800 rounded-2xl mb-10" />
+          <div className="h-8 w-56 bg-gray-200 dark:bg-gray-800 rounded mb-4" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={i}
-                className="h-24 bg-gray-100 dark:bg-gray-800 rounded-2xl animate-pulse"
+                className="h-24 bg-gray-100 dark:bg-gray-800 rounded-2xl"
               />
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      </main>
+    );
 
-      {/* Feature cards */}
-      <div className="max-w-5xl mx-auto px-6 pb-24 grid md:grid-cols-3 gap-6">
-        {[
-          {
-            title: "Passive Capture",
-            desc: "Automatic wearable + hormone-test signals only — no manual input.",
-          },
-          {
-            title: "Explainable AI",
-            desc: "Clinician trust over model size — transparent, signal-driven predictions.",
-          },
-          {
-            title: "Equity by Design",
-            desc: "Built for underrepresented cohorts from day one.",
-          },
-        ].map((f) => (
-          <div
-            key={f.title}
-            className="p-6 border border-gray-200 dark:border-gray-800 rounded-2xl bg-white dark:bg-gray-900"
-          >
-            <span className="inline-block text-xs font-medium text-rose-600 bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 px-3 py-1 rounded-full mb-3">
-              {f.title}
+  const chartData = timeline.readings.map((r: any) => ({
+    day: r.dayInStudy,
+    heartRate: r.heartRate,
+    skinTemp: r.skinTemp,
+    lh: r.lh,
+  }));
+
+  const selectedPrediction = predictions.find(
+    (p) => p.dayInStudy === selectedDay,
+  );
+  const latestRegularity =
+    predictions[predictions.length - 1]?.cycleRegularityScore;
+
+  return (
+    <main className="min-h-screen bg-[#FEFCFB] dark:bg-gray-950 p-4 md:p-10">
+      <div className="max-w-4xl mx-auto">
+        <Link
+          href="/dashboard"
+          className="inline-block text-sm text-gray-400 hover:text-rose-600 mb-4 transition"
+        >
+          ← Back to Overview
+        </Link>
+
+        <span className="inline-block text-xs font-medium text-rose-600 bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 px-3 py-1 rounded-full mb-3 ml-3">
+          PATIENT RECORD
+        </span>
+        <h1 className="font-serif text-4xl text-gray-700 dark:text-gray-100 mb-2">
+          Patient {id}
+        </h1>
+        {latestRegularity !== undefined && (
+          <p className="text-sm text-gray-400 mb-8">
+            Cycle Regularity Score:{" "}
+            <span
+              className={
+                latestRegularity > 4
+                  ? "text-rose-600 font-medium"
+                  : "text-gray-600"
+              }
+            >
+              {latestRegularity.toFixed(1)} day variability
             </span>
-            <p className="text-gray-500 dark:text-gray-400 text-sm">{f.desc}</p>
-          </div>
-        ))}
-      </div>
+          </p>
+        )}
 
-      {/* How it works + phone mockup */}
-      <div className="max-w-5xl mx-auto px-6 pb-28 grid md:grid-cols-2 gap-12 items-center">
-        <div>
-          <span className="inline-block text-xs font-medium text-rose-600 bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 px-3 py-1 rounded-full mb-4">
-            HOW IT WORKS
-          </span>
-          <h2 className="font-serif text-3xl text-gray-700 dark:text-gray-100 mb-6">
-            From wearable data to clinical insight
-          </h2>
-
-          <div className="space-y-6">
-            {HOW_IT_WORKS.map((s) => (
-              <div key={s.step} className="flex gap-4">
-                <span className="font-serif text-2xl text-rose-300 flex-shrink-0">
-                  {s.step}
-                </span>
-                <div>
-                  <p className="font-medium text-gray-700 dark:text-gray-200 mb-1">
-                    {s.title}
-                  </p>
-                  <p className="text-sm text-gray-400">{s.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="w-full h-72 mb-10 min-w-0 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4">
+          <ResponsiveContainer width="100%" height="100%" minWidth={300}>
+            <LineChart
+              data={chartData}
+              margin={{ top: 5, right: 20, bottom: 20, left: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+              <XAxis
+                dataKey="day"
+                label={{
+                  value: "Day in Study",
+                  position: "insideBottom",
+                  offset: -10,
+                }}
+                stroke="#9CA3AF"
+              />
+              <YAxis stroke="#9CA3AF" />
+              <Tooltip />
+              <Line
+                type="monotone"
+                dataKey="heartRate"
+                stroke="#C08497"
+                name="Heart Rate"
+                strokeWidth={2}
+                dot={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="skinTemp"
+                stroke="#9CB89A"
+                name="Skin Temp (BBT)"
+                strokeWidth={2}
+                dot={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="lh"
+                stroke="#D4A574"
+                name="LH"
+                strokeWidth={2}
+                dot={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
 
-        {/* Phone mockup */}
-        <div className="flex justify-center">
-          <div className="relative w-[280px] h-[580px] bg-gray-900 rounded-[2.5rem] p-3 shadow-2xl">
-            <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-5 bg-gray-900 rounded-b-xl z-10" />
-            <div className="w-full h-full bg-[#FEFCFB] rounded-[2rem] overflow-hidden flex flex-col">
-              <div className="flex items-center gap-2 px-4 pt-8 pb-3 border-b border-gray-100">
-                <span className="w-5 h-5 rounded-full bg-rose-400 flex items-center justify-center text-white text-[10px] font-serif">
-                  F
+        <h2 className="font-serif text-2xl text-gray-700 dark:text-gray-100 mb-4">
+          Ovulation Pattern Tracking
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
+          {predictions.slice(0, 8).map((p, i) => (
+            <button
+              key={i}
+              onClick={() => setSelectedDay(p.dayInStudy)}
+              className={`p-4 rounded-2xl border text-sm text-left transition bg-white dark:bg-gray-900 ${
+                p.flagged
+                  ? "border-rose-300 bg-rose-50 dark:bg-rose-900/10"
+                  : "border-gray-200 dark:border-gray-800"
+              } ${selectedDay === p.dayInStudy ? "ring-2 ring-rose-400" : "hover:border-rose-300"}`}
+            >
+              <p className="font-medium text-gray-700 dark:text-gray-200">
+                Day {p.dayInStudy}
+              </p>
+              <p className="text-gray-500 dark:text-gray-400">
+                {p.anovulationFlag ? "Suspected Anovulation" : "Ovulatory"}
+              </p>
+              <p className="text-xs text-gray-400">
+                Confidence {(p.confidence * 100).toFixed(0)}%
+              </p>
+              {p.flagged && (
+                <span className="text-xs text-rose-600 font-medium">
+                  ⚠ Flagged
                 </span>
-                <span className="font-serif text-sm text-gray-700">
-                  FemBalance
-                </span>
-              </div>
+              )}
+            </button>
+          ))}
+        </div>
 
-              <div className="flex-1 p-4 space-y-3 overflow-hidden">
-                <p className="text-[10px] font-medium text-rose-600 bg-rose-100 inline-block px-2 py-0.5 rounded-full mb-1">
-                  PATIENT LIST
-                </p>
+        {selectedPrediction && (
+          <div className="p-6 border border-gray-200 dark:border-gray-800 rounded-2xl bg-white dark:bg-gray-900">
+            <span className="inline-block text-xs font-medium text-rose-600 bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 px-3 py-1 rounded-full mb-3">
+              EXPLAINABILITY PANEL
+            </span>
+            <h2 className="font-serif text-xl text-gray-700 dark:text-gray-100 mb-1">
+              Which signals drove this prediction — Day{" "}
+              {selectedPrediction.dayInStudy}
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
+              {selectedPrediction.anovulationFlag
+                ? "Suspected anovulation"
+                : "Ovulatory pattern"}{" "}
+              predicted with {(selectedPrediction.confidence * 100).toFixed(0)}%
+              confidence — based on objective wearable and hormone-test readings
+              only.
+            </p>
 
-                {MOCK_PATIENTS.map((p) => (
-                  <div
-                    key={p.id}
-                    className="flex justify-between items-center p-3 border border-gray-100 rounded-xl bg-white"
-                  >
-                    <div>
-                      <p className="text-xs font-medium text-gray-700">
-                        {p.id}
-                      </p>
-                      <p className="text-[10px] text-gray-400">{p.sub}</p>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className="flex gap-0.5">
-                        {[0, 1, 2].map((i) => (
-                          <span
-                            key={i}
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              i < p.dots
-                                ? i === 0
-                                  ? "bg-rose-700"
-                                  : "bg-rose-300"
-                                : "border border-gray-300"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <span
-                        className={`text-[9px] font-medium border rounded-full px-2 py-0.5 ${
-                          p.risk === "High"
-                            ? "border-rose-500 text-rose-600"
-                            : p.risk === "Medium"
-                              ? "border-amber-400 text-amber-600"
-                              : "border-sky-400 text-sky-600"
-                        }`}
-                      >
-                        {p.risk}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-
-                <div className="pt-2 border-t border-gray-100 mt-3">
-                  <p className="text-[10px] font-medium text-rose-600 bg-rose-100 inline-block px-2 py-0.5 rounded-full mb-2">
-                    EXPLAINABILITY
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+              {selectedPrediction.topFeatures?.map((f: any, i: number) => (
+                <div
+                  key={i}
+                  className="flex flex-col items-center gap-2 p-3 border border-gray-100 dark:border-gray-800 rounded-xl"
+                >
+                  <span
+                    className={`w-4 h-4 rounded-full ${influenceStyles[f.level].dot}`}
+                  />
+                  <p className="text-sm text-gray-600 dark:text-gray-300 text-center">
+                    {f.name}
                   </p>
-                  <div className="grid grid-cols-4 gap-2">
-                    {["HR", "BBT", "LH", "E2"].map((sig, i) => (
-                      <div
-                        key={sig}
-                        className="flex flex-col items-center gap-1"
-                      >
-                        <span
-                          className={`w-2.5 h-2.5 rounded-full ${riskDotColor[i]}`}
-                        />
-                        <span className="text-[8px] text-gray-400">{sig}</span>
-                      </div>
-                    ))}
-                  </div>
                 </div>
-              </div>
+              ))}
             </div>
+
+            <div className="flex flex-wrap gap-4 text-xs text-gray-400 pt-3 border-t border-gray-100 dark:border-gray-800">
+              {Object.entries(influenceStyles).map(([key, s]) => (
+                <div key={key} className="flex items-center gap-1.5">
+                  <span className={`w-2.5 h-2.5 rounded-full ${s.dot}`} />
+                  {s.label}
+                </div>
+              ))}
+            </div>
+
+            <p className="text-xs text-gray-400 mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+              This is a pattern-based flag from objective wearable and
+              hormone-test data, not a diagnosis. Recommend clinical evaluation.
+            </p>
           </div>
-        </div>
+        )}
       </div>
     </main>
   );
