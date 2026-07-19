@@ -6,11 +6,11 @@ Predicting hormonal phases from everyday wearable data — built for equitable w
 
 ## Problem
 
-Menstrual and hormonal health remains under-researched, and existing datasets are small and demographically narrow (e.g. mcPHASES covers 42 young adults in Toronto). Underserved women — with limited access to healthcare, nutrition, and wearable technology — are especially absent from this data, making it harder to build tools that serve them. FemBalance explores whether passive wearable signals (heart rate, skin temperature) can predict hormonal phase without requiring manual tracking, and packages that prediction for clinicians rather than end consumers.
+Menstrual and hormonal health remains under-researched, and existing datasets are small and demographically narrow (e.g. mcPHASES covers 42 young adults in Toronto). Underserved women — with limited access to healthcare, nutrition, and wearable technology — are especially absent from this data, making it harder to build tools that serve them. FemBalance explores whether passive wearable signals (skin temperature) can predict hormonal phase without requiring manual tracking, and packages that prediction for clinicians rather than end consumers.
 
 ## What it does
 
-- **Wearable signal tracking** — ingests daily-aggregated heart rate, skin temperature, sleep, and glucose data
+- **Wearable signal tracking** — ingests daily-aggregated skin temperature, sleep, and glucose data
 - **Explainable phase prediction** — predicts menstrual cycle phase (menstruation / late-follicular / ovulation / luteal) with a confidence score and feature-importance breakdown, prioritizing interpretability over model size
 - **Clinician dashboard** — a patient-list view with flagged anomalies, and a per-patient timeline with an explainability panel
 
@@ -37,7 +37,7 @@ https://physionet.org/content/mcphases/ and run `scripts/clean_and_join.py`.
 
 ## Model
 
-- Input features: daily-aggregated heart rate, skin temperature, sleep score, glucose average
+- Input features: daily-aggregated, skin temperature, sleep score, glucose average
 - Output: predicted cycle phase + confidence score + top contributing features
 - Design priority: reproducibility and explainability over raw accuracy, per the challenge brief
 

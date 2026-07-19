@@ -38,10 +38,6 @@ This is the only data used to train the anovulation prediction model.
   (2,937 daily records). Cross-validation is grouped by `participantId` to
   avoid data leakage, but the small number of unique individuals limits how
   confidently the results generalize.
-- **No heart rate in training data.** Because dataset2 lacks `heartRate`, the
-  trained model uses only `age`, `skinTemp`, `lh`, and `estrogen` as inputs —
-  heart rate is displayed in the UI for context (dataset1 patients) but does
-  not factor into the anovulation prediction.
 - **Temperature scale mismatch across sources.** `skinTemp` means different
   things in each dataset (relative deviation vs. absolute BBT) and should not
   be visually compared across `dataset1` and `dataset2` patients on the same axis.

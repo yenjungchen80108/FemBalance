@@ -88,7 +88,6 @@ async function seedMock() {
         confidence: randomBetween(0.65, 0.95),
         cycleRegularityScore: +regularityDrift.toFixed(1),
         topFeatures: [
-          { name: "Heart Rate", level: getInfluenceLevel() },
           { name: "Skin Temp (BBT)", level: getInfluenceLevel() },
           { name: "LH", level: getInfluenceLevel() },
           { name: "Estrogen", level: getInfluenceLevel() },

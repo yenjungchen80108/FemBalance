@@ -6,12 +6,10 @@ import Image from "next/image";
 
 type Stats = {
   totalPatients: number;
-  underservedCount: number;
-  underservedPct: number;
   totalReadings: number;
   anovulationRate: number;
+  flaggedPatients: number;
   avgConfidence: number;
-  avgRegularity: string;
 };
 
 function StatCard({
@@ -70,7 +68,7 @@ export default function Home() {
           <div className="flex justify-center">
             <Image
               src="/wearable-mockup.png"
-              alt="Wearable device showing heart rate and body temperature tracking"
+              alt="Wearable device showing skin temperature tracking"
               width={400}
               height={500}
               className="w-full max-w-xs"
@@ -97,12 +95,12 @@ export default function Home() {
               value={String(stats.totalPatients)}
             />
             <StatCard
-              label="Underserved Cohort"
-              value={`${stats.underservedPct}%`}
-              sub={`${stats.underservedCount} patients`}
+              label="Flagged for Review"
+              value={String(stats.flaggedPatients)}
+              sub="patients with recurring risk pattern"
             />
             <StatCard
-              label="Wearable Readings Collected"
+              label="Daily Readings Analyzed"
               value={String(stats.totalReadings)}
             />
             <StatCard
@@ -171,12 +169,12 @@ export default function Home() {
               {
                 step: "02",
                 title: "Ovulation Pattern Timeline",
-                desc: "Per-patient cycle tracking from objective heart rate, temperature, and hormone readings.",
+                desc: "Per-patient cycle tracking from objective skin temperature, and hormone readings.",
               },
               {
                 step: "03",
                 title: "Explainability Panel",
-                desc: "Which signals — heart rate, temperature, LH, estrogen — drove each prediction.",
+                desc: "Which signals — temperature, LH, estrogen — drove each prediction.",
               },
             ].map((s) => (
               <div key={s.step} className="flex gap-4">

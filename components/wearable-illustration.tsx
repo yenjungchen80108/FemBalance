@@ -48,7 +48,7 @@ export function WearableIllustration() {
         d="M96 108 C96 105, 92 102, 89 105 C86 102, 82 105, 82 108 C82 112, 89 117, 96 108 Z"
         fill="#E88FA0"
       />
-      <text
+      {/* <text
         x="103"
         y="112"
         fontSize="13"
@@ -57,7 +57,7 @@ export function WearableIllustration() {
         fontWeight="500"
       >
         Heart Rate
-      </text>
+      </text> */}
       <text
         x="205"
         y="112"
