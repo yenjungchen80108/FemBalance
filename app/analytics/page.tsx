@@ -18,11 +18,7 @@ import {
 
 type AggregateData = {
   riskCounts: { High: number; Medium: number; Low: number };
-  cohortStats: {
-    cohort: string;
-    anovulationRate: number;
-    patientCount: number;
-  }[];
+  featureImportance: { feature: string; coefficient: number }[];
   regularityTrend: { day: number; avgRegularity: number }[];
   ageDistribution: { label: string; count: number }[];
   totalPatients: number;
@@ -63,6 +59,13 @@ export default function Analytics() {
 
   const riskData = data
     ? Object.entries(data.riskCounts).map(([name, value]) => ({ name, value }))
+    : [];
+
+  // 依係數絕對值排序，正負值分開上色，讓「影響方向」也能一眼看出
+  const featureData = data
+    ? [...data.featureImportance]
+        .sort((a, b) => Math.abs(b.coefficient) - Math.abs(a.coefficient))
+        .map((f) => ({ ...f, absValue: Math.abs(f.coefficient) }))
     : [];
 
   return (
@@ -114,22 +117,36 @@ export default function Analytics() {
           </ChartCard>
 
           <ChartCard
-            title="Anovulation Rate by Cohort"
-            sub="Underserved vs. general population"
+            title="Model Feature Importance"
+            sub="Logistic regression coefficients — what drives predictions across the population"
           >
             {!data ? (
               <ChartSkeleton />
             ) : (
               <ResponsiveContainer width="100%" height={260}>
-                <BarChart data={data.cohortStats}>
+                <BarChart
+                  data={featureData}
+                  layout="vertical"
+                  margin={{ left: 20 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
-                  <XAxis dataKey="cohort" stroke="#9CA3AF" />
-                  <YAxis stroke="#9CA3AF" unit="%" />
-                  <Tooltip />
+                  <XAxis type="number" stroke="#9CA3AF" />
+                  <YAxis
+                    type="category"
+                    dataKey="feature"
+                    stroke="#9CA3AF"
+                    width={100}
+                  />
+                  <Tooltip
+                    formatter={(value: number, _name, props: any) => [
+                      props.payload.coefficient.toFixed(3),
+                      "Coefficient",
+                    ]}
+                  />
                   <Bar
-                    dataKey="anovulationRate"
+                    dataKey="absValue"
                     fill="#C08497"
-                    radius={[6, 6, 0, 0]}
+                    radius={[0, 6, 6, 0]}
                   />
                 </BarChart>
               </ResponsiveContainer>

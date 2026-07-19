@@ -5,16 +5,16 @@ import Link from "next/link";
 type Patient = {
   participantId: string;
   age: number;
-  cohort: string;
   isFlagged: boolean;
+  confidence: number | null; // 新增
 };
 
 function getRiskLevel(
   isFlagged: boolean,
-  cohort: string,
+  confidence: number | null,
 ): "High" | "Medium" | "Low" {
   if (isFlagged) return "High";
-  if (cohort === "underserved") return "Medium";
+  if (confidence != null && confidence >= 0.55) return "Medium";
   return "Low";
 }
 
@@ -72,7 +72,7 @@ export default function Dashboard() {
 
   const enriched = (patients ?? []).map((p) => ({
     ...p,
-    risk: getRiskLevel(p.isFlagged, p.cohort),
+    risk: getRiskLevel(p.isFlagged, p.confidence),
   }));
 
   const filtered =
@@ -128,9 +128,7 @@ export default function Dashboard() {
                     <p className="font-medium text-gray-700">
                       {p.participantId}
                     </p>
-                    <p className="text-sm text-gray-400">
-                      {p.age} yrs · {p.cohort}
-                    </p>
+                    <p className="text-sm text-gray-400">{p.age} yrs</p>
                   </div>
                   <div className="flex items-center gap-4">
                     <AnomalyDots risk={p.risk} />

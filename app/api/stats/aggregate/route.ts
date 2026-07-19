@@ -2,92 +2,63 @@ import { connectDB } from "@/lib/db";
 import { Patient, Prediction } from "@/lib/models";
 import { NextResponse } from "next/server";
 
-export const revalidate = 30; // cache this route's response for 30 seconds
+export const revalidate = 30;
+
+// 訓練時算出的真實係數（來自 train_and_export.py 的輸出）
+const FEATURE_IMPORTANCE = [
+  { feature: "LH", coefficient: -1.061 },
+  { feature: "Estrogen", coefficient: -0.285 },
+  { feature: "Skin Temp (BBT)", coefficient: -0.082 },
+  { feature: "Age", coefficient: -0.022 },
+];
 
 export async function GET() {
   await connectDB();
 
-  const [totalPatients, patients, riskAgg, cohortAgg, regularityAgg, ageAgg] =
-    await Promise.all([
-      Patient.countDocuments(),
-      Patient.find({}, { participantId: 1, cohort: 1, age: 1 }).lean(),
+  const [totalPatients, riskAgg, regularityAgg, ageAgg] = await Promise.all([
+    Patient.countDocuments(),
 
-      // Risk distribution: count flagged patients directly in the database
-      Prediction.aggregate([
-        { $match: { flagged: true } },
-        { $group: { _id: "$participantId" } },
-        { $count: "flaggedCount" },
-      ]),
+    Prediction.aggregate([
+      { $match: { flagged: true } },
+      { $group: { _id: "$participantId" } },
+      { $count: "flaggedCount" },
+    ]),
 
-      // Cohort comparison: join Patient's cohort into Prediction, then group and average
-      Prediction.aggregate([
-        {
-          $lookup: {
-            from: "patients",
-            localField: "participantId",
-            foreignField: "participantId",
-            as: "patient",
-          },
+    Prediction.aggregate([
+      {
+        $group: {
+          _id: "$dayInStudy",
+          avgRegularity: { $avg: "$cycleRegularityScore" },
         },
-        { $unwind: "$patient" },
-        {
-          $group: {
-            _id: "$patient.cohort",
-            anovulationRate: { $avg: { $cond: ["$anovulationFlag", 1, 0] } },
-            patientCount: { $addToSet: "$participantId" },
-          },
+      },
+      { $sort: { _id: 1 } },
+      {
+        $project: {
+          day: "$_id",
+          avgRegularity: { $round: ["$avgRegularity", 2] },
+          _id: 0,
         },
-        {
-          $project: {
-            cohort: "$_id",
-            anovulationRate: {
-              $round: [{ $multiply: ["$anovulationRate", 100] }, 0],
-            },
-            patientCount: { $size: "$patientCount" },
-          },
-        },
-      ]),
+      },
+    ]),
 
-      // Cycle regularity trend: group by dayInStudy and average
-      Prediction.aggregate([
-        {
-          $group: {
-            _id: "$dayInStudy",
-            avgRegularity: { $avg: "$cycleRegularityScore" },
-          },
+    Patient.aggregate([
+      {
+        $bucket: {
+          groupBy: "$age",
+          boundaries: [18, 25, 31, 37, 200],
+          default: "other",
+          output: { count: { $sum: 1 } },
         },
-        { $sort: { _id: 1 } },
-        {
-          $project: {
-            day: "$_id",
-            avgRegularity: { $round: ["$avgRegularity", 2] },
-            _id: 0,
-          },
-        },
-      ]),
-
-      // Age distribution can stay in JS since patient count is small (30 records), not a bottleneck
-      Patient.aggregate([
-        {
-          $bucket: {
-            groupBy: "$age",
-            boundaries: [18, 25, 31, 37, 200],
-            default: "other",
-            output: { count: { $sum: 1 } },
-          },
-        },
-      ]),
-    ]);
+      },
+    ]),
+  ]);
 
   const flaggedCount = riskAgg[0]?.flaggedCount || 0;
-  const underservedCount = patients.filter(
-    (p) => p.cohort === "underserved",
-  ).length;
 
   const riskCounts = {
     High: flaggedCount,
-    Medium: underservedCount - Math.min(flaggedCount, underservedCount),
-    Low: totalPatients - underservedCount,
+    Medium: 0, // 由前端用 confidence 門檻再細分，這裡先給高層級輪廓
+    Low: totalPatients - flaggedCount,
   };
 
   const ageLabels = ["18-24", "25-30", "31-36", "37+"];
@@ -98,7 +69,7 @@ export async function GET() {
 
   return NextResponse.json({
     riskCounts,
-    cohortStats: cohortAgg,
+    featureImportance: FEATURE_IMPORTANCE,
     regularityTrend: regularityAgg,
     ageDistribution,
     totalPatients,

@@ -52,6 +52,24 @@ const influenceStyles: Record<string, { dot: string; label: string }> = {
 
 const WINDOW_SIZE = 30;
 
+// 自訂資料點，讓每個點可以被點擊
+function ClickableDot(props: any) {
+  const { cx, cy, payload, onDotClick } = props;
+  if (cx == null || cy == null) return null;
+  return (
+    <circle
+      cx={cx}
+      cy={cy}
+      r={3}
+      fill="#C08497"
+      stroke="#fff"
+      strokeWidth={1}
+      style={{ cursor: "pointer" }}
+      onClick={() => onDotClick(payload.day)}
+    />
+  );
+}
+
 export default function PatientDetail({
   params,
 }: {
@@ -75,8 +93,6 @@ export default function PatientDetail({
 
   useEffect(() => {
     if (!timeline) return;
-    const total = timeline.readings.length;
-    // 預設把窗口放在最前面（第 1 天開始），從頭播放整段紀錄比較直覺
     setWindowStart(0);
   }, [timeline]);
 
@@ -112,16 +128,13 @@ export default function PatientDetail({
       </main>
     );
 
-  const chartData = timeline.readings.map((r: any, i: number, arr: any[]) => {
+  // 不再插入斷層 null，資料點之間永遠連續畫線
+  const chartData = timeline.readings.map((r: any) => {
     const pred = predictions.find((p: any) => p.dayInStudy === r.dayInStudy);
-    const prevDay = i > 0 ? arr[i - 1].dayInStudy : r.dayInStudy;
-    const isGap = r.dayInStudy - prevDay > 30; // 超过 30 天视为跨 interval 的断层
-
     return {
       day: r.dayInStudy,
-      heartRate: isGap ? null : r.heartRate,
-      skinTemp: isGap ? null : r.skinTemp,
-      lh: isGap ? null : r.lh,
+      skinTemp: r.skinTemp,
+      lh: r.lh,
       anovulationFlag: pred?.anovulationFlag ?? false,
       confidence: pred?.confidence ?? null,
       cycleRegularityScore: pred?.cycleRegularityScore ?? null,
@@ -134,12 +147,20 @@ export default function PatientDetail({
   const maxStart = Math.max(0, totalDays - WINDOW_SIZE);
   const windowEnd = Math.min(totalDays - 1, windowStart + WINDOW_SIZE - 1);
 
-  // 窗口內最新一天的資料，拿來給下面 Day Snapshot 面板顯示
   const cursorPoint = chartData[windowEnd];
 
   const stepWindow = (delta: number) => {
     setIsPlaying(false);
     setWindowStart((prev) => Math.min(maxStart, Math.max(0, prev + delta)));
+  };
+
+  // 點擊圖上任一資料點，直接把窗口終點移到那一天
+  const handleDotClick = (clickedDay: number) => {
+    setIsPlaying(false);
+    const idx = chartData.findIndex((d: any) => d.day === clickedDay);
+    if (idx === -1) return;
+    const newStart = Math.min(maxStart, Math.max(0, idx - WINDOW_SIZE + 1));
+    setWindowStart(newStart);
   };
 
   const areaX1 = chartData[windowStart]?.day;
@@ -161,9 +182,12 @@ export default function PatientDetail({
         <h1 className="font-serif text-4xl text-gray-700 mb-1">Patient {id}</h1>
         <p className="text-sm text-gray-400 mb-8">
           {totalDays} days recorded · highlighted window: Day {areaX1}–{areaX2}
+          <span className="text-gray-300">
+            {" "}
+            · click any point on the chart to jump there
+          </span>
         </p>
 
-        {/* Full timeline chart with moving window highlight */}
         <div className="w-full mb-6 bg-white border border-gray-200 rounded-2xl p-4">
           <ResponsiveContainer width="100%" height={320}>
             <LineChart
@@ -183,7 +207,6 @@ export default function PatientDetail({
               <YAxis stroke="#9CA3AF" />
               <Tooltip labelFormatter={(v) => `Day ${v}`} />
 
-              {/* Moving gray highlight band covering the 30-day window */}
               {areaX1 != null && areaX2 != null && (
                 <ReferenceArea
                   x1={areaX1}
@@ -196,19 +219,13 @@ export default function PatientDetail({
 
               <Line
                 type="monotone"
-                dataKey="heartRate"
-                stroke="#C08497"
-                name="Heart Rate"
-                strokeWidth={2}
-                dot={false}
-              />
-              <Line
-                type="monotone"
                 dataKey="skinTemp"
                 stroke="#9CB89A"
                 name="Skin Temp (BBT)"
                 strokeWidth={2}
-                dot={false}
+                dot={<ClickableDot onDotClick={handleDotClick} />}
+                activeDot={{ r: 5 }}
+                connectNulls
               />
               <Line
                 type="monotone"
@@ -216,13 +233,14 @@ export default function PatientDetail({
                 stroke="#D4A574"
                 name="LH"
                 strokeWidth={2}
-                dot={false}
+                dot={<ClickableDot onDotClick={handleDotClick} />}
+                activeDot={{ r: 5 }}
+                connectNulls
               />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Playback controls */}
         <div className="flex items-center justify-center gap-3 mb-3">
           <button
             onClick={() => stepWindow(-1)}
@@ -249,7 +267,6 @@ export default function PatientDetail({
           </button>
         </div>
 
-        {/* Slider to manually scrub the window */}
         <div className="mb-10 px-2">
           <input
             type="range"
@@ -267,7 +284,6 @@ export default function PatientDetail({
           </p>
         </div>
 
-        {/* Day snapshot panel — shows latest day within the current window */}
         {cursorPoint && (
           <div className="p-6 border border-gray-200 rounded-2xl bg-white mb-6">
             <div className="flex items-center justify-between mb-4">
@@ -289,7 +305,7 @@ export default function PatientDetail({
               )}
             </div>
 
-            <div className="grid grid-cols-3 gap-4 mb-5">
+            <div className="grid grid-cols-2 gap-4 mb-5">
               <div className="text-center">
                 <p className="font-serif text-2xl text-gray-700">
                   {cursorPoint.confidence
@@ -305,18 +321,6 @@ export default function PatientDetail({
                     : "–"}
                 </p>
                 <p className="text-xs text-gray-400">Cycle Regularity Score</p>
-              </div>
-              <div className="text-center">
-                <p className="font-serif text-2xl text-gray-700">
-                  {cursorPoint.heartRate != null
-                    ? cursorPoint.heartRate.toFixed(0)
-                    : "–"}
-                </p>
-                <p className="text-xs text-gray-400">
-                  Heart Rate (bpm)
-                  {cursorPoint.heartRate == null &&
-                    " · not available for this data source"}
-                </p>
               </div>
             </div>
 

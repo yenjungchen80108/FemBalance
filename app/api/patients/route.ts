@@ -5,9 +5,26 @@ import { NextResponse } from "next/server";
 export async function GET() {
   await connectDB();
   const patients = await Patient.find().lean();
-  const flagged = await Prediction.find({ flagged: true }).lean();
-  const flaggedIds = new Set(flagged.map((f) => f.participantId));
-  return NextResponse.json(
-    patients.map((p) => ({ ...p, isFlagged: flaggedIds.has(p.participantId) })),
-  );
+
+  // 拿每位病人最新一天的預測結果，當作代表性風險依據
+  const allPredictions = await Prediction.find()
+    .sort({ dayInStudy: -1 })
+    .lean();
+  const latestByPatient: Record<string, any> = {};
+  for (const p of allPredictions) {
+    if (!latestByPatient[p.participantId]) {
+      latestByPatient[p.participantId] = p;
+    }
+  }
+
+  const enriched = patients.map((p) => {
+    const latest = latestByPatient[p.participantId];
+    return {
+      ...p,
+      isFlagged: latest?.flagged ?? false,
+      confidence: latest?.confidence ?? null,
+    };
+  });
+
+  return NextResponse.json(enriched);
 }
